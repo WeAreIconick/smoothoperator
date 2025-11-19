@@ -108,7 +108,7 @@ function autoscroll_block_enqueue_assets() {
 			'autoscroll-block-view',
 			$base_url . 'view.js',
 			array(),
-			'1.0.0',
+			filemtime( $build_path . '/view.js' ), // Use file modification time for cache busting
 			true
 		);
 	}
@@ -119,7 +119,7 @@ function autoscroll_block_enqueue_assets() {
 			'autoscroll-block-style',
 			$base_url . 'style-index.css',
 			array(),
-			'1.0.1'
+			filemtime( $build_path . '/style-index.css' ) // Use file modification time for cache busting
 		);
 	}
 }

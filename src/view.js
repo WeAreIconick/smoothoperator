@@ -2,6 +2,34 @@
 	'use strict';
 
 	/**
+	 * Sanitize and validate hex color
+	 * @param {string} color - Color string to sanitize
+	 * @returns {string} - Sanitized hex color or default
+	 */
+	function sanitizeHexColor( color ) {
+		if ( ! color || typeof color !== 'string' ) {
+			return '#667eea';
+		}
+		// Remove whitespace and validate hex color format
+		const cleaned = color.trim().replace( /[^#0-9A-Fa-f]/g, '' );
+		if ( /^#[0-9A-Fa-f]{6}$/.test( cleaned ) || /^#[0-9A-Fa-f]{3}$/.test( cleaned ) ) {
+			return cleaned;
+		}
+		return '#667eea';
+	}
+
+	/**
+	 * Clamp a number between min and max values
+	 * @param {number} value - Value to clamp
+	 * @param {number} min - Minimum value
+	 * @param {number} max - Maximum value
+	 * @returns {number} - Clamped value
+	 */
+	function clamp( value, min, max ) {
+		return Math.min( Math.max( value, min ), max );
+	}
+
+	/**
 	 * Initialize autoscroll functionality for all autoscroll blocks on the page
 	 */
 	function initAutoscrollBlocks() {
@@ -13,32 +41,34 @@
 				return;
 			}
 
-			// Parse scroll speed (pixels per second)
-			const scrollSpeed = parseFloat( block.dataset.scrollSpeed ) || 50;
+			// Parse and validate scroll speed (pixels per second)
+			const scrollSpeed = clamp( parseFloat( block.dataset.scrollSpeed ) || 50, 10, 500 );
 			
 			// Parse animation settings
 			const enableAnimations = block.dataset.enableAnimations !== 'false';
 			const animationStyle = block.dataset.animationStyle || 'fade-up';
-			const animationThreshold = parseFloat( block.dataset.animationThreshold ) || 0.1;
-			const animationDuration = parseFloat( block.dataset.animationDuration ) || 0.6;
+			const animationThreshold = clamp( parseFloat( block.dataset.animationThreshold ) || 0.1, 0, 1 );
+			const animationDuration = clamp( parseFloat( block.dataset.animationDuration ) || 0.6, 0.1, 2 );
 			
 			// Parse typing effect settings
 			const enableTypingEffect = block.dataset.enableTypingEffect === 'true';
-			const typingSpeed = parseFloat( block.dataset.typingSpeed ) || 50;
+			const typingSpeed = clamp( parseFloat( block.dataset.typingSpeed ) || 50, 10, 200 );
 			
-			// Parse visual effect settings
+			// Parse visual effect settings with validation
 			const enableParallax = block.dataset.enableParallax === 'true';
-			const parallaxIntensity = parseFloat( block.dataset.parallaxIntensity ) || 0.5;
+			const parallaxIntensity = clamp( parseFloat( block.dataset.parallaxIntensity ) || 0.5, 0.1, 1 );
 			const enableParticles = block.dataset.enableParticles === 'true';
-			const particleDensity = parseFloat( block.dataset.particleDensity ) || 50;
+			const particleDensity = clamp( parseFloat( block.dataset.particleDensity ) || 50, 10, 200 );
 			const enableGradientShift = block.dataset.enableGradientShift === 'true';
-			const gradientColors = ( block.dataset.gradientColors || '#667eea,#764ba2' ).split( ',' );
+			// Sanitize gradient colors to prevent XSS
+			const gradientColorsRaw = block.dataset.gradientColors || '#667eea,#764ba2';
+			const gradientColors = gradientColorsRaw.split( ',' ).map( sanitizeHexColor ).slice( 0, 10 ); // Limit to 10 colors max
 			const enableBlurTransitions = block.dataset.enableBlurTransitions === 'true';
-			const blurIntensity = parseFloat( block.dataset.blurIntensity ) || 5;
+			const blurIntensity = clamp( parseFloat( block.dataset.blurIntensity ) || 5, 1, 20 );
 			const enableScaleEffects = block.dataset.enableScaleEffects === 'true';
-			const scaleIntensity = parseFloat( block.dataset.scaleIntensity ) || 0.1;
+			const scaleIntensity = clamp( parseFloat( block.dataset.scaleIntensity ) || 0.1, 0.1, 0.5 );
 			const enableGlitch = block.dataset.enableGlitch === 'true';
-			const glitchFrequency = parseFloat( block.dataset.glitchFrequency ) || 0.1;
+			const glitchFrequency = clamp( parseFloat( block.dataset.glitchFrequency ) || 0.1, 0.01, 0.5 );
 			const enableProgressBar = block.dataset.enableProgressBar !== 'false';
 			const enableRipples = block.dataset.enableRipples === 'true';
 			const enableLightRays = block.dataset.enableLightRays === 'true';
@@ -53,10 +83,64 @@
 
 			let animationFrame = null;
 			let isPlaying = false;
+			let particleInterval = null;
+			let glitchTimeout = null;
+			let parallaxObserver = null;
+			let scaleObserver = null;
+			let typingObserver = null;
+			const cleanupFunctions = [];
 
 			// Get icon elements
 			const playIcon = controlButton.querySelector( '.autoscroll-play-icon' );
 			const pauseIcon = controlButton.querySelector( '.autoscroll-pause-icon' );
+
+			/**
+			 * Cleanup function to remove all listeners and clear intervals
+			 */
+			function cleanup() {
+				// Cancel animation frame
+				if ( animationFrame ) {
+					cancelAnimationFrame( animationFrame );
+					animationFrame = null;
+				}
+
+				// Clear intervals
+				if ( particleInterval ) {
+					clearInterval( particleInterval );
+					particleInterval = null;
+				}
+
+				// Clear timeouts
+				if ( glitchTimeout ) {
+					clearTimeout( glitchTimeout );
+					glitchTimeout = null;
+				}
+
+				// Disconnect observers
+				if ( parallaxObserver ) {
+					parallaxObserver.disconnect();
+					parallaxObserver = null;
+				}
+				if ( scaleObserver ) {
+					scaleObserver.disconnect();
+					scaleObserver = null;
+				}
+				if ( typingObserver ) {
+					typingObserver.disconnect();
+					typingObserver = null;
+				}
+
+				// Run registered cleanup functions
+				cleanupFunctions.forEach( ( fn ) => {
+					if ( typeof fn === 'function' ) {
+						fn();
+					}
+				} );
+				cleanupFunctions.length = 0;
+
+				// Remove body classes
+				document.body.classList.remove( 'autoscroll-active', 'autoscroll-parallax', 'autoscroll-gradient-shift', 'autoscroll-blur-transitions', 'autoscroll-scale-effects', 'autoscroll-glitch', 'autoscroll-animated-bg' );
+			}
 
 			/**
 			 * Check if we've reached the bottom of the page
@@ -114,6 +198,14 @@
 				const targetScrollY = Math.min( newScrollY, maxScrollY );
 				window.scrollTo( 0, targetScrollY );
 
+				// Ensure admin bar stays fixed during scroll
+				const adminBar = document.getElementById( 'wpadminbar' );
+				if ( adminBar ) {
+					adminBar.style.position = 'fixed';
+					adminBar.style.top = '0';
+					adminBar.style.transform = 'translateY(0)';
+				}
+
 				// Update progress bar if enabled
 				if ( enableProgressBar ) {
 					updateProgressBar( targetScrollY, maxScrollY );
@@ -157,7 +249,7 @@
 
 				// Create Intersection Observer for typing effect
 				// Trigger when heading enters viewport
-				const typingObserver = new IntersectionObserver( function( entries ) {
+				typingObserver = new IntersectionObserver( function( entries ) {
 					entries.forEach( function( entry ) {
 						if ( entry.isIntersecting && ! entry.target.dataset.typingStarted ) {
 							entry.target.dataset.typingStarted = 'true';
@@ -356,7 +448,6 @@
 			/**
 			 * Initialize particle effects
 			 */
-			let particleInterval = null;
 			function initParticles() {
 				if ( ! enableParticles ) {
 					return;
@@ -381,13 +472,16 @@
 					const duration = Math.random() * 5 + 5; // 5-10 seconds
 					const xOffset = ( Math.random() - 0.5 ) * 40; // -20px to 20px horizontal drift
 					
-					// Add some color variety - mix of white, light blue, light pink, light yellow
+					// Add vibrant color variety - visible on both light and dark backgrounds
 					const colors = [
-						'rgba(255, 255, 255, 1)',
-						'rgba(173, 216, 230, 1)',
-						'rgba(255, 182, 193, 1)',
-						'rgba(255, 255, 224, 1)',
-						'rgba(221, 160, 221, 1)'
+						'rgba(102, 126, 234, 1)',   // Vibrant blue
+						'rgba(118, 75, 162, 1)',    // Purple
+						'rgba(240, 147, 251, 1)',   // Pink
+						'rgba(79, 172, 254, 1)',    // Bright blue
+						'rgba(255, 107, 107, 1)',   // Coral red
+						'rgba(255, 206, 84, 1)',    // Golden yellow
+						'rgba(72, 219, 251, 1)',    // Cyan
+						'rgba(255, 159, 243, 1)'    // Magenta
 					];
 					const color = colors[ Math.floor( Math.random() * colors.length ) ];
 
@@ -548,7 +642,7 @@
 				} );
 
 				// Create Intersection Observer for scale effect
-				const scaleObserver = new IntersectionObserver( function( entries ) {
+				scaleObserver = new IntersectionObserver( function( entries ) {
 					entries.forEach( function( entry ) {
 						if ( entry.isIntersecting ) {
 							const progress = entry.intersectionRatio;
@@ -570,17 +664,29 @@
 			}
 
 			/**
-			 * Update progress bar
+			 * Update progress bar (debounced for performance)
 			 */
+			let progressBarElement = null;
+			let progressBarTimeout = null;
 			function updateProgressBar( currentScroll, maxScroll ) {
-				let progressBar = document.querySelector( '.autoscroll-progress-bar' );
-				if ( ! progressBar ) {
-					progressBar = document.createElement( 'div' );
-					progressBar.className = 'autoscroll-progress-bar';
-					document.body.appendChild( progressBar );
+				// Debounce updates to improve performance
+				if ( progressBarTimeout ) {
+					return;
 				}
-				const progress = maxScroll > 0 ? ( currentScroll / maxScroll ) * 100 : 0;
-				progressBar.style.width = progress + '%';
+
+				progressBarTimeout = requestAnimationFrame( function() {
+					if ( ! progressBarElement ) {
+						progressBarElement = document.querySelector( '.autoscroll-progress-bar' );
+						if ( ! progressBarElement ) {
+							progressBarElement = document.createElement( 'div' );
+							progressBarElement.className = 'autoscroll-progress-bar';
+							document.body.appendChild( progressBarElement );
+						}
+					}
+					const progress = maxScroll > 0 ? Math.min( 100, Math.max( 0, ( currentScroll / maxScroll ) * 100 ) ) : 0;
+					progressBarElement.style.width = progress + '%';
+					progressBarTimeout = null;
+				} );
 			}
 
 			/**
@@ -679,6 +785,17 @@
 				controlButton.setAttribute( 'aria-pressed', 'true' );
 				controlButton.classList.add( 'is-playing' );
 
+				// Ensure admin bar stays fixed
+				const adminBar = document.getElementById( 'wpadminbar' );
+				if ( adminBar ) {
+					adminBar.style.position = 'fixed';
+					adminBar.style.top = '0';
+					adminBar.style.left = '0';
+					adminBar.style.right = '0';
+					adminBar.style.zIndex = '99999';
+					adminBar.style.transform = 'none';
+				}
+
 				// Add class to body to enable animations
 				document.body.classList.add( 'autoscroll-active' );
 
@@ -736,10 +853,7 @@
 			 * Stop autoscrolling
 			 */
 			function stopScroll() {
-				if ( animationFrame ) {
-					cancelAnimationFrame( animationFrame );
-					animationFrame = null;
-				}
+				cleanup();
 
 				isPlaying = false;
 				controlButton.setAttribute( 'aria-pressed', 'false' );
@@ -779,10 +893,12 @@
 			} );
 
 			// Clean up on page unload
-			window.addEventListener( 'beforeunload', function() {
-				if ( animationFrame ) {
-					cancelAnimationFrame( animationFrame );
-				}
+			const beforeUnloadHandler = function() {
+				cleanup();
+			};
+			window.addEventListener( 'beforeunload', beforeUnloadHandler );
+			cleanupFunctions.push( function() {
+				window.removeEventListener( 'beforeunload', beforeUnloadHandler );
 			} );
 
 			// Mark as initialized

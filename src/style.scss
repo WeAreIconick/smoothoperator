@@ -1,5 +1,7 @@
 // Enable smooth scrolling for the page when autoscroll is active
-html {
+// Scoped to only affect when block is present
+.autoscroll-block ~ *,
+html:has(.autoscroll-block) {
 	scroll-behavior: smooth;
 }
 
@@ -231,10 +233,15 @@ body.autoscroll-parallax {
 	overflow: hidden;
 }
 
-// Ensure admin bar stays on top and is not affected by particles
+// Ensure admin bar stays on top and is not affected by particles or scrolling
 #wpadminbar {
 	position: fixed !important;
+	top: 0 !important;
+	left: 0 !important;
+	right: 0 !important;
 	z-index: 99999 !important;
+	transform: none !important;
+	will-change: auto !important;
 }
 
 .autoscroll-particle {

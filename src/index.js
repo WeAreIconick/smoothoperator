@@ -150,9 +150,14 @@ registerBlockType( 'autoscroll-block/autoscroll', {
 								<input
 									type="text"
 									value={ gradientColors }
-									onChange={ ( e ) => setAttributes( { gradientColors: e.target.value } ) }
+									onChange={ ( e ) => {
+										// Sanitize input: only allow hex colors and commas
+										const sanitized = e.target.value.replace( /[^#0-9A-Fa-f,]/g, '' );
+										setAttributes( { gradientColors: sanitized } );
+									} }
 									placeholder="#667eea,#764ba2"
 									style={ { width: '100%', padding: '5px' } }
+									maxLength={ 100 }
 								/>
 							</div>
 						) }
