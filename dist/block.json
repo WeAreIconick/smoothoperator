@@ -1,0 +1,103 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "autoscroll-block/autoscroll",
+	"version": "1.0.0",
+	"title": "Smooth Operator",
+	"category": "widgets",
+	"icon": "arrow-down-alt2",
+	"description": "Sit back and let your content do the scrolling. Perfect for demos, showcases, and making your site look like it has a mind of its own.",
+	"keywords": [ "scroll", "autoscroll", "video", "tiktok" ],
+	"textdomain": "autoscroll-block",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"viewScript": "file:./view.js",
+	"attributes": {
+		"scrollSpeed": {
+			"type": "number",
+			"default": 50
+		},
+		"enableAnimations": {
+			"type": "boolean",
+			"default": true
+		},
+		"animationStyle": {
+			"type": "string",
+			"default": "fade-up"
+		},
+		"animationThreshold": {
+			"type": "number",
+			"default": 0.1
+		},
+		"animationDuration": {
+			"type": "number",
+			"default": 0.6
+		},
+		"enableTypingEffect": {
+			"type": "boolean",
+			"default": false
+		},
+		"typingSpeed": {
+			"type": "number",
+			"default": 50
+		},
+		"enableParallax": {
+			"type": "boolean",
+			"default": false
+		},
+		"parallaxIntensity": {
+			"type": "number",
+			"default": 0.5
+		},
+		"enableParticles": {
+			"type": "boolean",
+			"default": false
+		},
+		"particleDensity": {
+			"type": "number",
+			"default": 50
+		},
+		"enableGradientShift": {
+			"type": "boolean",
+			"default": false
+		},
+		"gradientColors": {
+			"type": "string",
+			"default": "#667eea,#764ba2"
+		},
+		"enableBlurTransitions": {
+			"type": "boolean",
+			"default": false
+		},
+		"blurIntensity": {
+			"type": "number",
+			"default": 5
+		},
+		"enableScaleEffects": {
+			"type": "boolean",
+			"default": false
+		},
+		"scaleIntensity": {
+			"type": "number",
+			"default": 0.1
+		},
+		"enableGlitch": {
+			"type": "boolean",
+			"default": false
+		},
+		"glitchFrequency": {
+			"type": "number",
+			"default": 0.1
+		}
+	},
+	"supports": {
+		"html": false,
+		"align": false,
+		"spacing": {
+			"margin": true,
+			"padding": true
+		}
+	}
+}
+
