@@ -89,6 +89,26 @@
 		"glitchFrequency": {
 			"type": "number",
 			"default": 0.1
+		},
+		"enableProgressBar": {
+			"type": "boolean",
+			"default": true
+		},
+		"enableRipples": {
+			"type": "boolean",
+			"default": false
+		},
+		"enableLightRays": {
+			"type": "boolean",
+			"default": false
+		},
+		"enableAnimatedBg": {
+			"type": "boolean",
+			"default": false
+		},
+		"particleTrails": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {

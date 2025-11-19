@@ -39,6 +39,11 @@
 			const scaleIntensity = parseFloat( block.dataset.scaleIntensity ) || 0.1;
 			const enableGlitch = block.dataset.enableGlitch === 'true';
 			const glitchFrequency = parseFloat( block.dataset.glitchFrequency ) || 0.1;
+			const enableProgressBar = block.dataset.enableProgressBar !== 'false';
+			const enableRipples = block.dataset.enableRipples === 'true';
+			const enableLightRays = block.dataset.enableLightRays === 'true';
+			const enableAnimatedBg = block.dataset.enableAnimatedBg === 'true';
+			const particleTrails = block.dataset.particleTrails === 'true';
 			
 			const controlButton = block.querySelector( '.autoscroll-block-control' );
 
@@ -108,6 +113,16 @@
 				// Scroll to the calculated position (don't exceed max)
 				const targetScrollY = Math.min( newScrollY, maxScrollY );
 				window.scrollTo( 0, targetScrollY );
+
+				// Update progress bar if enabled
+				if ( enableProgressBar ) {
+					updateProgressBar( targetScrollY, maxScrollY );
+				}
+
+				// Trigger ripple effects if enabled
+				if ( enableRipples && Math.random() < 0.02 ) {
+					createRipple( window.innerWidth / 2, window.innerHeight / 2 );
+				}
 
 				// Continue scrolling
 				animationFrame = requestAnimationFrame( continuousScroll );
@@ -341,6 +356,7 @@
 			/**
 			 * Initialize particle effects
 			 */
+			let particleInterval = null;
 			function initParticles() {
 				if ( ! enableParticles ) {
 					return;
@@ -359,26 +375,44 @@
 					const particle = document.createElement( 'div' );
 					particle.className = 'autoscroll-particle';
 
-					const size = Math.random() * 4 + 2; // 2-6px
+					const size = Math.random() * 8 + 4; // 4-12px (larger particles)
 					const x = Math.random() * window.innerWidth;
-					const delay = Math.random() * 10;
+					const delay = Math.random() * 2;
+					const duration = Math.random() * 5 + 5; // 5-10 seconds
+					const xOffset = ( Math.random() - 0.5 ) * 40; // -20px to 20px horizontal drift
+					
+					// Add some color variety - mix of white, light blue, light pink, light yellow
+					const colors = [
+						'rgba(255, 255, 255, 1)',
+						'rgba(173, 216, 230, 1)',
+						'rgba(255, 182, 193, 1)',
+						'rgba(255, 255, 224, 1)',
+						'rgba(221, 160, 221, 1)'
+					];
+					const color = colors[ Math.floor( Math.random() * colors.length ) ];
 
 					particle.style.width = size + 'px';
 					particle.style.height = size + 'px';
 					particle.style.left = x + 'px';
 					particle.style.top = window.innerHeight + 'px';
-					particle.style.background = 'rgba(255, 255, 255, 0.8)';
-					particle.style.animationDelay = delay + 's';
-					particle.style.animationDuration = ( Math.random() * 5 + 5 ) + 's';
+					particle.style.background = color;
+					particle.style.boxShadow = '0 0 ' + ( size * 2 ) + 'px ' + color + ', 0 0 ' + ( size * 1.5 ) + 'px rgba(255, 255, 255, 0.8)';
+					particle.style.animation = 'particleFloat ' + duration + 's ' + delay + 's ease-in-out forwards';
+					particle.style.setProperty( '--particle-x-offset', xOffset );
+					
+					// Add trail effect if enabled
+					if ( particleTrails ) {
+						particle.classList.add( 'autoscroll-particle-trail' );
+					}
 
 					particlesContainer.appendChild( particle );
 
-					// Remove particle after animation
+					// Remove particle after animation completes
 					setTimeout( function() {
 						if ( particle.parentNode ) {
 							particle.parentNode.removeChild( particle );
 						}
-					}, 15000 );
+					}, ( delay + duration ) * 1000 + 100 );
 				}
 
 				// Create initial particles
@@ -386,17 +420,15 @@
 					setTimeout( createParticle, i * 100 );
 				}
 
-				// Continuously create new particles
-				const particleInterval = setInterval( function() {
-					if ( isPlaying && particlesContainer.children.length < particleDensity ) {
+				// Continuously create new particles (not dependent on isPlaying)
+				if ( particleInterval ) {
+					clearInterval( particleInterval );
+				}
+				particleInterval = setInterval( function() {
+					if ( particlesContainer.children.length < particleDensity ) {
 						createParticle();
 					}
 				}, 2000 );
-
-				// Clean up on stop
-				window.addEventListener( 'beforeunload', function() {
-					clearInterval( particleInterval );
-				} );
 			}
 
 			/**
@@ -538,6 +570,73 @@
 			}
 
 			/**
+			 * Update progress bar
+			 */
+			function updateProgressBar( currentScroll, maxScroll ) {
+				let progressBar = document.querySelector( '.autoscroll-progress-bar' );
+				if ( ! progressBar ) {
+					progressBar = document.createElement( 'div' );
+					progressBar.className = 'autoscroll-progress-bar';
+					document.body.appendChild( progressBar );
+				}
+				const progress = maxScroll > 0 ? ( currentScroll / maxScroll ) * 100 : 0;
+				progressBar.style.width = progress + '%';
+			}
+
+			/**
+			 * Create ripple effect
+			 */
+			function createRipple( x, y ) {
+				const ripple = document.createElement( 'div' );
+				ripple.className = 'autoscroll-ripple';
+				ripple.style.left = x + 'px';
+				ripple.style.top = y + 'px';
+				document.body.appendChild( ripple );
+
+				setTimeout( function() {
+					if ( ripple.parentNode ) {
+						ripple.parentNode.removeChild( ripple );
+					}
+				}, 2000 );
+			}
+
+			/**
+			 * Initialize light rays effect
+			 */
+			function initLightRays() {
+				if ( ! enableLightRays ) {
+					return;
+				}
+
+				let raysContainer = document.querySelector( '.autoscroll-light-rays' );
+				if ( ! raysContainer ) {
+					raysContainer = document.createElement( 'div' );
+					raysContainer.className = 'autoscroll-light-rays';
+					document.body.appendChild( raysContainer );
+
+					// Create multiple light rays
+					for ( let i = 0; i < 5; i++ ) {
+						const ray = document.createElement( 'div' );
+						ray.className = 'autoscroll-light-ray';
+						ray.style.setProperty( '--ray-delay', i * 0.5 + 's' );
+						ray.style.setProperty( '--ray-duration', ( Math.random() * 3 + 4 ) + 's' );
+						raysContainer.appendChild( ray );
+					}
+				}
+			}
+
+			/**
+			 * Initialize animated background patterns
+			 */
+			function initAnimatedBg() {
+				if ( ! enableAnimatedBg ) {
+					return;
+				}
+
+				document.body.classList.add( 'autoscroll-animated-bg' );
+			}
+
+			/**
 			 * Initialize glitch effects
 			 */
 			function initGlitch() {
@@ -609,6 +708,15 @@
 				}
 				if ( enableGlitch ) {
 					initGlitch();
+				}
+				if ( enableLightRays ) {
+					initLightRays();
+				}
+				if ( enableAnimatedBg ) {
+					initAnimatedBg();
+				}
+				if ( enableProgressBar ) {
+					updateProgressBar( window.scrollY || 0, Math.max( 0, document.documentElement.scrollHeight - window.innerHeight ) );
 				}
 
 				// Show pause icon, hide play icon

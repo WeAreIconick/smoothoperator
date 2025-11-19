@@ -9,7 +9,7 @@
 		"build": "wp-scripts build && npm run copy:blockjson",
 		"copy:blockjson": "cp block.json build/block.json 2>/dev/null || true",
 		"build:dist": "npm run build && npm run copy:dist",
-		"copy:dist": "mkdir -p dist && cp -r build/* dist/ && cp autoscroll-block.php block.json readme.txt dist/ && find dist -name '*.map' -delete 2>/dev/null || true",
+		"copy:dist": "mkdir -p dist && cp -r build/* dist/ && cp smooth-operator.php block.json readme.txt dist/ && find dist -name '*.map' -delete 2>/dev/null || true",
 		"watch": "wp-scripts start",
 		"watch:dist": "npm run build:dist && npm run watch",
 		"watch:auto": "node .watch-build.js",

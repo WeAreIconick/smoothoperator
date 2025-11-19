@@ -69,7 +69,7 @@ This will:
 
 ```
 autoscroll-block/
-├── autoscroll-block.php    # Main plugin file
+├── smooth-operator.php    # Main plugin file
 ├── block.json              # Block metadata
 ├── package.json            # NPM dependencies
 ├── src/

@@ -8,7 +8,7 @@ import './style.scss';
 
 registerBlockType( 'autoscroll-block/autoscroll', {
 	edit: ( { attributes, setAttributes } ) => {
-		const { scrollSpeed, enableAnimations, animationStyle, animationThreshold, animationDuration, enableTypingEffect, typingSpeed, enableParallax, parallaxIntensity, enableParticles, particleDensity, enableGradientShift, gradientColors, enableBlurTransitions, blurIntensity, enableScaleEffects, scaleIntensity, enableGlitch, glitchFrequency } = attributes;
+		const { scrollSpeed, enableAnimations, animationStyle, animationThreshold, animationDuration, enableTypingEffect, typingSpeed, enableParallax, parallaxIntensity, enableParticles, particleDensity, enableGradientShift, gradientColors, enableBlurTransitions, blurIntensity, enableScaleEffects, scaleIntensity, enableGlitch, glitchFrequency, enableProgressBar, enableRipples, enableLightRays, enableAnimatedBg, particleTrails } = attributes;
 		const blockProps = useBlockProps( {
 			className: 'autoscroll-block-editor',
 		} );
@@ -118,15 +118,23 @@ registerBlockType( 'autoscroll-block/autoscroll', {
 							help={ __( 'Add floating particles, sparkles, or confetti during scroll', 'autoscroll-block' ) }
 						/>
 						{ enableParticles && (
-							<RangeControl
-								label={ __( 'Particle Density', 'autoscroll-block' ) }
-								value={ particleDensity }
-								onChange={ ( value ) => setAttributes( { particleDensity: value } ) }
-								min={ 10 }
-								max={ 200 }
-								step={ 10 }
-								help={ __( 'Number of particles on screen (higher = more particles)', 'autoscroll-block' ) }
-							/>
+							<>
+								<RangeControl
+									label={ __( 'Particle Density', 'autoscroll-block' ) }
+									value={ particleDensity }
+									onChange={ ( value ) => setAttributes( { particleDensity: value } ) }
+									min={ 10 }
+									max={ 200 }
+									step={ 10 }
+									help={ __( 'Number of particles on screen (higher = more particles)', 'autoscroll-block' ) }
+								/>
+								<ToggleControl
+									label={ __( 'Particle Trails', 'autoscroll-block' ) }
+									checked={ particleTrails }
+									onChange={ ( value ) => setAttributes( { particleTrails: value } ) }
+									help={ __( 'Add trailing effects to particles for more visual impact', 'autoscroll-block' ) }
+								/>
+							</>
 						) }
 						<ToggleControl
 							label={ __( 'Enable Gradient Shift', 'autoscroll-block' ) }
@@ -199,6 +207,30 @@ registerBlockType( 'autoscroll-block/autoscroll', {
 								help={ __( 'How often glitch effects occur (higher = more frequent)', 'autoscroll-block' ) }
 							/>
 						) }
+						<ToggleControl
+							label={ __( 'Scroll Progress Bar', 'autoscroll-block' ) }
+							checked={ enableProgressBar !== false }
+							onChange={ ( value ) => setAttributes( { enableProgressBar: value } ) }
+							help={ __( 'Show a progress bar at the top indicating scroll position', 'autoscroll-block' ) }
+						/>
+						<ToggleControl
+							label={ __( 'Ripple Effects', 'autoscroll-block' ) }
+							checked={ enableRipples }
+							onChange={ ( value ) => setAttributes( { enableRipples: value } ) }
+							help={ __( 'Add animated ripple effects during scrolling', 'autoscroll-block' ) }
+						/>
+						<ToggleControl
+							label={ __( 'Light Rays', 'autoscroll-block' ) }
+							checked={ enableLightRays }
+							onChange={ ( value ) => setAttributes( { enableLightRays: value } ) }
+							help={ __( 'Add animated light ray effects in the background', 'autoscroll-block' ) }
+						/>
+						<ToggleControl
+							label={ __( 'Animated Background', 'autoscroll-block' ) }
+							checked={ enableAnimatedBg }
+							onChange={ ( value ) => setAttributes( { enableAnimatedBg: value } ) }
+							help={ __( 'Add animated geometric patterns to the background', 'autoscroll-block' ) }
+						/>
 					</PanelBody>
 				</InspectorControls>
 
@@ -226,7 +258,7 @@ registerBlockType( 'autoscroll-block/autoscroll', {
 	},
 
 	save: ( { attributes } ) => {
-		const { scrollSpeed, enableAnimations, animationStyle, animationThreshold, animationDuration, enableTypingEffect, typingSpeed, enableParallax, parallaxIntensity, enableParticles, particleDensity, enableGradientShift, gradientColors, enableBlurTransitions, blurIntensity, enableScaleEffects, scaleIntensity, enableGlitch, glitchFrequency } = attributes;
+		const { scrollSpeed, enableAnimations, animationStyle, animationThreshold, animationDuration, enableTypingEffect, typingSpeed, enableParallax, parallaxIntensity, enableParticles, particleDensity, enableGradientShift, gradientColors, enableBlurTransitions, blurIntensity, enableScaleEffects, scaleIntensity, enableGlitch, glitchFrequency, enableProgressBar, enableRipples, enableLightRays, enableAnimatedBg, particleTrails } = attributes;
 		const blockProps = useBlockProps.save( {
 			className: 'autoscroll-block',
 			'data-scroll-speed': scrollSpeed,
@@ -248,6 +280,11 @@ registerBlockType( 'autoscroll-block/autoscroll', {
 			'data-scale-intensity': scaleIntensity,
 			'data-enable-glitch': enableGlitch ? 'true' : 'false',
 			'data-glitch-frequency': glitchFrequency,
+			'data-enable-progress-bar': enableProgressBar !== false ? 'true' : 'false',
+			'data-enable-ripples': enableRipples ? 'true' : 'false',
+			'data-enable-light-rays': enableLightRays ? 'true' : 'false',
+			'data-enable-animated-bg': enableAnimatedBg ? 'true' : 'false',
+			'data-particle-trails': particleTrails ? 'true' : 'false',
 		} );
 
 		return (
