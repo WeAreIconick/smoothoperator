@@ -1,0 +1,35 @@
+{
+	"name": "autoscroll-block",
+	"version": "1.0.0",
+	"description": "A WordPress Gutenberg block for automatic page scrolling",
+	"author": "iconick",
+	"license": "GPL-2.0-or-later",
+	"main": "build/index.js",
+	"scripts": {
+		"build": "wp-scripts build && npm run copy:blockjson",
+		"copy:blockjson": "cp block.json build/block.json 2>/dev/null || true",
+		"build:dist": "npm run build && npm run copy:dist",
+		"copy:dist": "mkdir -p dist && cp -r build/* dist/ && cp autoscroll-block.php block.json readme.txt dist/ && find dist -name '*.map' -delete 2>/dev/null || true",
+		"watch": "wp-scripts start",
+		"watch:dist": "npm run build:dist && npm run watch",
+		"watch:auto": "node .watch-build.js",
+		"format": "wp-scripts format",
+		"lint:css": "wp-scripts lint-style",
+		"lint:js": "wp-scripts lint-js",
+		"packages-update": "wp-scripts packages-update",
+		"plugin-zip": "wp-scripts plugin-zip",
+		"start": "npm run watch"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^26.0.0",
+		"chokidar": "^3.5.3"
+	},
+	"dependencies": {
+		"@wordpress/blocks": "^12.0.0",
+		"@wordpress/block-editor": "^12.0.0",
+		"@wordpress/components": "^25.0.0",
+		"@wordpress/element": "^5.0.0",
+		"@wordpress/i18n": "^4.0.0"
+	}
+}
+

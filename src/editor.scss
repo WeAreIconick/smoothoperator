@@ -1,0 +1,58 @@
+.autoscroll-block-editor {
+	border: 1px dashed #ccc;
+	border-radius: 4px;
+	padding: 20px;
+	background: #f9f9f9;
+}
+
+.autoscroll-block-preview {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+}
+
+.autoscroll-block-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	background: #2271b1;
+	border-radius: 50%;
+	color: #fff;
+	flex-shrink: 0;
+
+	svg {
+		width: 24px;
+		height: 24px;
+		fill: currentColor;
+	}
+}
+
+.autoscroll-block-info {
+	flex: 1;
+
+	h3 {
+		margin: 0 0 8px 0;
+		font-size: 16px;
+		font-weight: 600;
+		color: #1e1e1e;
+	}
+
+	p {
+		margin: 4px 0;
+		font-size: 14px;
+		color: #50575e;
+		line-height: 1.5;
+	}
+
+	.autoscroll-block-note {
+		margin-top: 12px;
+		padding-top: 12px;
+		border-top: 1px solid #ddd;
+		font-style: italic;
+		color: #646970;
+		font-size: 13px;
+	}
+}
+
